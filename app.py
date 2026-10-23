@@ -76,6 +76,7 @@ with st.form("crop_form"):
         use_container_width=True
     )
 
+
 if submitted:
     values = {
         "N": N,
@@ -91,7 +92,26 @@ if submitted:
     prediction = model.predict(sample)[0]
     confidence = model.predict_proba(sample).max() * 100
 
-    st.success(f"Recommended Crop: {prediction.title()}")
+    conn = sqlite3.connect("crop_history.db")
+    cursor = conn.cursor()
+
+    cursor.execute("""
+        INSERT INTO predictions (
+            nitrogen, phosphorus, potassium,
+            temperature, humidity, ph, rainfall,
+            predicted_crop, confidence, created_at
+        )
+        VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?)
+    """, (
+        N, P, K, temperature, humidity, ph, rainfall,
+        str(prediction), float(confidence),
+        datetime.now().strftime("%Y-%m-%d %H:%M:%S")
+    ))
+
+    conn.commit()
+    conn.close()
+
+    st.success(f"Recommended Crop: {str(prediction).title()}")
     st.metric("Model Confidence", f"{confidence:.2f}%")
     st.caption(
         "This is a model prediction based on the supplied inputs, "
