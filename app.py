@@ -16,6 +16,31 @@ def load_model():
     return data["model"], data["features"]
 
 model, features = load_model()
+def create_database():
+    conn = sqlite3.connect("crop_history.db")
+    cursor = conn.cursor()
+
+    cursor.execute("""
+        CREATE TABLE IF NOT EXISTS predictions (
+            id INTEGER PRIMARY KEY AUTOINCREMENT,
+            nitrogen REAL,
+            phosphorus REAL,
+            potassium REAL,
+            temperature REAL,
+            humidity REAL,
+            ph REAL,
+            rainfall REAL,
+            predicted_crop TEXT,
+            confidence REAL,
+            created_at TEXT
+        )
+    """)
+
+    conn.commit()
+    conn.close()
+
+
+create_database()
 
 st.title("🌱 AI-Based Crop Recommendation System")
 st.write(
