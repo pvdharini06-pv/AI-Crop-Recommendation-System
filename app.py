@@ -117,3 +117,28 @@ if submitted:
         "This is a model prediction based on the supplied inputs, "
         "not a guarantee of crop yield or suitability in the field."
     )
+    
+st.divider()
+st.subheader("📜 Crop Prediction History")
+
+conn = sqlite3.connect("crop_history.db")
+
+history = pd.read_sql_query("""
+    SELECT
+        created_at AS 'Date & Time',
+        nitrogen AS 'Nitrogen',
+        phosphorus AS 'Phosphorus',
+        potassium AS 'Potassium',
+        predicted_crop AS 'Recommended Crop',
+        confidence AS 'Confidence (%)'
+    FROM predictions
+    ORDER BY id DESC
+""", conn)
+
+conn.close()
+
+if history.empty:
+    st.info("No prediction history yet. Predict a crop to see it here.")
+else:
+    st.dataframe(history, use_container_width=True, hide_index=True)
+
